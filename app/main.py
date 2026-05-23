@@ -1,6 +1,7 @@
 from fastapi import FastAPI, UploadFile, File
 from pydantic import BaseModel
 from app.services.whisper_service import transcribe_audio
+from app.services.chunk_service import chunk_text
 
 import shutil
 import os
@@ -33,9 +34,11 @@ def read_yt_url(data: YTRequest):
 # folders
 UPLOAD_FOLDER = "uploads/media"
 TRANSCRIPT_FOLDER = "uploads/transcripts"
+CHUNKS_FOLDER = "uploads/chunks"
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(TRANSCRIPT_FOLDER, exist_ok=True)
+os.makedirs(CHUNKS_FOLDER, exist_ok=True)
 
 
 # upload endpoint
@@ -88,7 +91,37 @@ async def upload_file(file: UploadFile = File(...)):
     with open(transcript_path, "w", encoding="utf-8") as f:
 
         f.write(transcript)
+    
+    # generate chunks
+    chunks = chunk_text(transcript)
+    chunk_files = []
+    chunk_metadata = []
 
+    for index, chunk in enumerate(chunks):
+
+        chunk_number = index + 1
+
+        chunk_filename = f"{unique_id}_chunk_{index + 1}.txt"
+
+        chunk_path = os.path.join(
+            CHUNKS_FOLDER,
+            chunk_filename
+        )
+
+        with open(chunk_path, "w", encoding="utf-8") as f:
+
+            f.write(chunk)
+
+    chunk_files.append(chunk_filename)
+    chunk_metadata.append({
+
+        "chunk_number": chunk_number,
+
+        "chunk_file": chunk_filename,
+
+        "chunk_text": chunk
+
+    })
     return {
         "message": "File uploaded successfully",
 
@@ -103,6 +136,8 @@ async def upload_file(file: UploadFile = File(...)):
         "transcript_path": transcript_path,
 
         "type": file.content_type,
+        "total_chunks": len(chunks),
+        "chunk_files": chunk_files,
 
         "transcript": transcript
     }
