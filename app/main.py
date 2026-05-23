@@ -3,6 +3,8 @@ from pydantic import BaseModel
 from app.services.whisper_service import transcribe_audio
 from app.services.chunk_service import chunk_text
 from app.services.embedding_service import generate_embedding
+from app.services.chroma_service import store_embedding
+from app.services.retrieval_service import retrieve_chunks
 
 import shutil
 import os
@@ -118,6 +120,23 @@ async def upload_file(file: UploadFile = File(...)):
         # generate embedding
         embedding = generate_embedding(chunk)
 
+        store_embedding(
+
+            chunk_id=f"{unique_id}_chunk_{chunk_number}",
+
+            embedding=embedding,
+
+            chunk_text=chunk,
+
+            metadata={
+
+                "source_file": file.filename,
+
+                "chunk_number": chunk_number
+
+            }
+        )
+
         chunk_metadata.append({
 
             "chunk_number": chunk_number,
@@ -129,6 +148,7 @@ async def upload_file(file: UploadFile = File(...)):
             "embedding_dimension": len(embedding)
 
         })
+
     return {
         "message": "File uploaded successfully",
 
@@ -147,4 +167,14 @@ async def upload_file(file: UploadFile = File(...)):
         "chunk_files": chunk_files,
 
         "transcript": transcript
+    }
+
+@app.get("/search")
+def search(query: str):
+
+    results = retrieve_chunks(query)
+
+    return {
+        "query": query,
+        "results": results
     }
