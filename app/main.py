@@ -1,54 +1,108 @@
 from fastapi import FastAPI, UploadFile, File
 from pydantic import BaseModel
-import shutil
-import os
-import subprocess
 from app.services.whisper_service import transcribe_audio
 
-app=FastAPI()
+import shutil
+import os
+import uuid
 
-#created a custom class 
+app = FastAPI()
+
+
+# custom request model
 class YTRequest(BaseModel):
     url: str
 
+
 @app.get("/")
 def read_root():
-    return {"Note":"Hello I am learning FastApi"}
+    return {
+        "message": "Transcription AI Backend Running"
+    }
 
-# we had to use pydantic to tell that url will come in json body otherwise it searches in query params => /yt?url=abc
+
+# youtube url endpoint
 @app.post("/yt")
 def read_yt_url(data: YTRequest):
-    print(data.url)
-    return {"url": data.url}
+
+    return {
+        "url": data.url
+    }
 
 
-UPLOAD_FOLDER = "uploads"
+# folders
+UPLOAD_FOLDER = "uploads/media"
+TRANSCRIPT_FOLDER = "uploads/transcripts"
+
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(TRANSCRIPT_FOLDER, exist_ok=True)
 
+
+# upload endpoint
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
 
+    # allowed file types
     allowed_extensions = [".mp3", ".mp4", ".wav"]
 
+    # extract extension
     extension = os.path.splitext(file.filename)[1].lower()
 
+    # validate extension
     if extension not in allowed_extensions:
+
         return {
             "error": "Only mp3, mp4 and wav files are allowed"
         }
 
-    file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+    # generate unique id
+    unique_id = str(uuid.uuid4())
 
+    # unique audio filename
+    unique_filename = unique_id + extension
+
+    # final audio path
+    file_path = os.path.join(
+        UPLOAD_FOLDER,
+        unique_filename
+    )
+
+    # save uploaded file
     with open(file_path, "wb") as buffer:
+
         shutil.copyfileobj(file.file, buffer)
 
     # transcription
     transcript = transcribe_audio(file_path)
 
+    # transcript filename
+    transcript_filename = unique_id + ".txt"
+
+    # transcript path
+    transcript_path = os.path.join(
+        TRANSCRIPT_FOLDER,
+        transcript_filename
+    )
+
+    # save transcript
+    with open(transcript_path, "w", encoding="utf-8") as f:
+
+        f.write(transcript)
+
     return {
         "message": "File uploaded successfully",
-        "filename": file.filename,
-        "path": file_path,
+
+        # original filename from user
+        "original_filename": file.filename,
+
+        # stored unique filenames
+        "stored_audio_file": unique_filename,
+        "stored_transcript_file": transcript_filename,
+
+        "audio_path": file_path,
+        "transcript_path": transcript_path,
+
         "type": file.content_type,
+
         "transcript": transcript
     }
