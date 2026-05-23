@@ -2,6 +2,7 @@ from fastapi import FastAPI, UploadFile, File
 from pydantic import BaseModel
 from app.services.whisper_service import transcribe_audio
 from app.services.chunk_service import chunk_text
+from app.services.embedding_service import generate_embedding
 
 import shutil
 import os
@@ -101,7 +102,7 @@ async def upload_file(file: UploadFile = File(...)):
 
         chunk_number = index + 1
 
-        chunk_filename = f"{unique_id}_chunk_{index + 1}.txt"
+        chunk_filename = f"{unique_id}_chunk_{chunk_number}.txt"
 
         chunk_path = os.path.join(
             CHUNKS_FOLDER,
@@ -112,16 +113,22 @@ async def upload_file(file: UploadFile = File(...)):
 
             f.write(chunk)
 
-    chunk_files.append(chunk_filename)
-    chunk_metadata.append({
+        chunk_files.append(chunk_filename)
 
-        "chunk_number": chunk_number,
+        # generate embedding
+        embedding = generate_embedding(chunk)
 
-        "chunk_file": chunk_filename,
+        chunk_metadata.append({
 
-        "chunk_text": chunk
+            "chunk_number": chunk_number,
 
-    })
+            "chunk_file": chunk_filename,
+
+            "chunk_text": chunk,
+
+            "embedding_dimension": len(embedding)
+
+        })
     return {
         "message": "File uploaded successfully",
 
