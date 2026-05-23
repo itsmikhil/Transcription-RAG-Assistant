@@ -1,0 +1,13 @@
+upload file
+    ↓
+Whisper transcription
+    ↓
+save transcript
+    ↓
+chunking
+    ↓
+embeddings
+    ↓
+vector DB
+    ↓
+RAG Q&A
