@@ -1,13 +1,23 @@
-from app.services.chroma_service import collection
-from app.services.embedding_service import generate_embedding
+from app.services.chroma_service import (
+    get_collection
+)
+
+from app.services.embedding_service import (
+    generate_embedding
+)
 
 
 def retrieve_chunks(query: str):
 
-    # convert query to embedding
-    query_embedding = generate_embedding(query)
+    # query embedding
+    query_embedding = generate_embedding(
+        query
+    )
 
-    # chroma search
+    # latest collection
+    collection = get_collection()
+
+    # search
     results = collection.query(
 
         query_embeddings=[query_embedding],
@@ -18,12 +28,17 @@ def retrieve_chunks(query: str):
     formatted_results = []
 
     documents = results["documents"][0]
+
     metadatas = results["metadatas"][0]
+
     distances = results["distances"][0]
 
     for doc, metadata, distance in zip(
+
         documents,
+
         metadatas,
+
         distances
     ):
 
@@ -31,9 +46,13 @@ def retrieve_chunks(query: str):
 
             "text": doc,
 
-            "source_file": metadata["source_file"],
+            "source_file": (
+                metadata["source_file"]
+            ),
 
-            "chunk_number": metadata["chunk_number"],
+            "chunk_number": (
+                metadata["chunk_number"]
+            ),
 
             "distance": distance
         })

@@ -7,12 +7,22 @@ from app.services.whisper_service import (
     transcribe_audio
 )
 
+# folders
 TRANSCRIPT_FOLDER = "uploads/transcripts"
 CHUNKS_FOLDER = "uploads/chunks"
 
-os.makedirs(TRANSCRIPT_FOLDER, exist_ok=True)
-os.makedirs(CHUNKS_FOLDER, exist_ok=True)
+os.makedirs(
+    TRANSCRIPT_FOLDER,
+    exist_ok=True
+)
 
+os.makedirs(
+    CHUNKS_FOLDER,
+    exist_ok=True
+)
+
+
+# media pipeline
 def process_media_file(
 
     file_path: str,
@@ -22,10 +32,12 @@ def process_media_file(
     unique_id: str
 ):
 
-    # generate transcript using whisper
-    transcript = transcribe_audio(file_path)
+    # generate transcript
+    transcript = transcribe_audio(
+        file_path
+    )
 
-    # pass transcript into pipeline
+    # process transcript
     result = process_transcript(
 
         transcript=transcript,
@@ -37,6 +49,8 @@ def process_media_file(
 
     return result
 
+
+# transcript pipeline
 def process_transcript(
 
     transcript: str,
@@ -46,45 +60,71 @@ def process_transcript(
     unique_id: str
 ):
 
-    # save transcript
-    transcript_filename = unique_id + ".txt"
+    # transcript filename
+    transcript_filename = (
+        unique_id + ".txt"
+    )
 
     transcript_path = os.path.join(
+
         TRANSCRIPT_FOLDER,
+
         transcript_filename
     )
 
-    with open(transcript_path, "w", encoding="utf-8") as f:
+    # save transcript
+    with open(
+
+        transcript_path,
+
+        "w",
+
+        encoding="utf-8"
+    ) as f:
 
         f.write(transcript)
 
-    # chunking
+    # chunk transcript
     chunks = chunk_text(transcript)
 
+    # metadata list
     chunk_metadata = []
 
+    # process chunks
     for index, chunk in enumerate(chunks):
 
         chunk_number = index + 1
 
+        # chunk filename
         chunk_filename = (
             f"{unique_id}_chunk_{chunk_number}.txt"
         )
 
         chunk_path = os.path.join(
+
             CHUNKS_FOLDER,
+
             chunk_filename
         )
 
         # save chunk
-        with open(chunk_path, "w", encoding="utf-8") as f:
+        with open(
+
+            chunk_path,
+
+            "w",
+
+            encoding="utf-8"
+        ) as f:
 
             f.write(chunk)
 
         # embedding
-        embedding = generate_embedding(chunk)
+        embedding = generate_embedding(
+            chunk
+        )
 
-        # store in chroma
+        # store in chromadb
         store_embedding(
 
             chunk_id=(
@@ -103,6 +143,7 @@ def process_transcript(
             }
         )
 
+        # save metadata
         chunk_metadata.append({
 
             "chunk_number": chunk_number,
