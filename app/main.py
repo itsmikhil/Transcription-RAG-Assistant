@@ -1,74 +1,75 @@
 from fastapi import FastAPI, UploadFile, File
+from fastapi import Form
+
 from pydantic import BaseModel
-from app.services.whisper_service import transcribe_audio
-from app.services.chunk_service import chunk_text
-from app.services.embedding_service import generate_embedding
-from app.services.chroma_service import store_embedding
-from app.services.retrieval_service import retrieve_chunks
-from app.services.rag_service import generate_rag_answer
 
 import shutil
 import os
 import uuid
 
+from app.services.whisper_service import transcribe_audio
+from app.services.retrieval_service import retrieve_chunks
+from app.services.rag_service import generate_rag_answer
+from app.services.yt_service import get_youtube_transcript
+from app.services.pipeline_service import process_transcript,process_media_file
+
 app = FastAPI()
 
 
-# custom request model
+# request model
 class YTRequest(BaseModel):
     url: str
 
 
 @app.get("/")
 def read_root():
+
     return {
         "message": "Transcription AI Backend Running"
     }
 
 
-# youtube url endpoint
-@app.post("/yt")
-def read_yt_url(data: YTRequest):
-
-    return {
-        "url": data.url
-    }
-
-
 # folders
 UPLOAD_FOLDER = "uploads/media"
-TRANSCRIPT_FOLDER = "uploads/transcripts"
-CHUNKS_FOLDER = "uploads/chunks"
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(TRANSCRIPT_FOLDER, exist_ok=True)
-os.makedirs(CHUNKS_FOLDER, exist_ok=True)
 
 
-# upload endpoint
+# upload local media
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
 
     # allowed file types
-    allowed_extensions = [".mp3", ".mp4", ".wav"]
+    allowed_extensions = [
+        ".mp3",
+        ".mp4",
+        ".wav",
+        ".m4a",
+        ".mov"
+    ]
 
-    # extract extension
-    extension = os.path.splitext(file.filename)[1].lower()
+    # extension
+    extension = os.path.splitext(
+        file.filename
+    )[1].lower()
 
     # validate extension
     if extension not in allowed_extensions:
 
         return {
-            "error": "Only mp3, mp4 and wav files are allowed"
+            "error": (
+                "Only mp3, mp4, wav, m4a "
+                "and mov files are allowed"
+            )
         }
 
-    # generate unique id
+    # unique id
     unique_id = str(uuid.uuid4())
 
-    # unique audio filename
+    # unique filename
     unique_filename = unique_id + extension
 
-    # final audio path
+    # save path
     file_path = os.path.join(
         UPLOAD_FOLDER,
         unique_filename
@@ -77,109 +78,103 @@ async def upload_file(file: UploadFile = File(...)):
     # save uploaded file
     with open(file_path, "wb") as buffer:
 
-        shutil.copyfileobj(file.file, buffer)
+        shutil.copyfileobj(
+            file.file,
+            buffer
+        )
 
-    # transcription
-    transcript = transcribe_audio(file_path)
+    pipeline_result = process_media_file(
 
-    # transcript filename
-    transcript_filename = unique_id + ".txt"
+        file_path=file_path,
 
-    # transcript path
-    transcript_path = os.path.join(
-        TRANSCRIPT_FOLDER,
-        transcript_filename
+        source_name=file.filename,
+
+        unique_id=unique_id
     )
 
-    # save transcript
-    with open(transcript_path, "w", encoding="utf-8") as f:
-
-        f.write(transcript)
-    
-    # generate chunks
-    chunks = chunk_text(transcript)
-    chunk_files = []
-    chunk_metadata = []
-
-    for index, chunk in enumerate(chunks):
-
-        chunk_number = index + 1
-
-        chunk_filename = f"{unique_id}_chunk_{chunk_number}.txt"
-
-        chunk_path = os.path.join(
-            CHUNKS_FOLDER,
-            chunk_filename
-        )
-
-        with open(chunk_path, "w", encoding="utf-8") as f:
-
-            f.write(chunk)
-
-        chunk_files.append(chunk_filename)
-
-        # generate embedding
-        embedding = generate_embedding(chunk)
-
-        store_embedding(
-
-            chunk_id=f"{unique_id}_chunk_{chunk_number}",
-
-            embedding=embedding,
-
-            chunk_text=chunk,
-
-            metadata={
-
-                "source_file": file.filename,
-
-                "chunk_number": chunk_number
-
-            }
-        )
-
-        chunk_metadata.append({
-
-            "chunk_number": chunk_number,
-
-            "chunk_file": chunk_filename,
-
-            "chunk_text": chunk,
-
-            "embedding_dimension": len(embedding)
-
-        })
-
     return {
-        "message": "File uploaded successfully",
 
-        # original filename from user
+        "message": (
+            "File uploaded and processed successfully"
+        ),
+
         "original_filename": file.filename,
 
-        # stored unique filenames
-        "stored_audio_file": unique_filename,
-        "stored_transcript_file": transcript_filename,
+        "stored_file": unique_filename,
 
-        "audio_path": file_path,
-        "transcript_path": transcript_path,
+        "transcript_path": (
+            pipeline_result["transcript_path"]
+        ),
 
-        "type": file.content_type,
-        "total_chunks": len(chunks),
-        "chunk_files": chunk_files,
+        "total_chunks": (
+            pipeline_result["total_chunks"]
+        ),
 
-        "transcript": transcript
+        "chunk_metadata": (
+            pipeline_result["chunk_metadata"]
+        )
     }
 
+
+# youtube processing
+@app.post("/yt")
+def process_youtube_video(data: YTRequest):
+
+    # fetch youtube transcript
+    transcript = get_youtube_transcript(
+        data.url
+    )
+
+    # unique id
+    unique_id = str(uuid.uuid4())
+
+    # process transcript pipeline
+    pipeline_result = process_transcript(
+
+        transcript=transcript,
+
+        source_name=data.url,
+
+        unique_id=unique_id
+    )
+
+    return {
+
+        "message": (
+            "YouTube video processed successfully"
+        ),
+
+        "youtube_url": data.url,
+
+        "transcript_path": (
+            pipeline_result["transcript_path"]
+        ),
+
+        "total_chunks": (
+            pipeline_result["total_chunks"]
+        ),
+
+        "chunk_metadata": (
+            pipeline_result["chunk_metadata"]
+        )
+    }
+
+
+# semantic search
 @app.get("/search")
 def search(query: str):
 
     results = retrieve_chunks(query)
 
     return {
+
         "query": query,
+
         "results": results
     }
 
+
+# rag chat
 @app.post("/chat")
 def chat(query: str):
 
