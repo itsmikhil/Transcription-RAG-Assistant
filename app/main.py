@@ -5,6 +5,7 @@ from app.services.chunk_service import chunk_text
 from app.services.embedding_service import generate_embedding
 from app.services.chroma_service import store_embedding
 from app.services.retrieval_service import retrieve_chunks
+from app.services.rag_service import generate_rag_answer
 
 import shutil
 import os
@@ -178,3 +179,10 @@ def search(query: str):
         "query": query,
         "results": results
     }
+
+@app.post("/chat")
+def chat(query: str):
+
+    response = generate_rag_answer(query)
+
+    return response

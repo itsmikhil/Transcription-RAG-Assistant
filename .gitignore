@@ -10,3 +10,5 @@ wheels/
 .venv
 .env
 todos.txt
+chroma_db/
+uploads/
