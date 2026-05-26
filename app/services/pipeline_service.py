@@ -7,7 +7,7 @@ from app.services.whisper_service import (
     transcribe_audio
 )
 
-# folders
+# folder setup
 TRANSCRIPT_FOLDER = "uploads/transcripts"
 CHUNKS_FOLDER = "uploads/chunks"
 
@@ -25,11 +25,11 @@ os.makedirs(
 # media pipeline
 def process_media_file(
 
-    file_path: str,
+    file_path: str, #where file is stored
 
-    source_name: str,
+    source_name: str, #orginal file name
 
-    unique_id: str
+    unique_id: str #unique number which we are giving to file
 ):
 
     # generate transcript
@@ -50,21 +50,21 @@ def process_media_file(
     return result
 
 
-# transcript pipeline
+# transcript pipeline for yt video transcripts
 def process_transcript(
 
-    transcript: str,
+    transcript: str, 
 
     source_name: str,
 
     unique_id: str
 ):
 
-    # transcript filename
+    # unique file name
     transcript_filename = (
         unique_id + ".txt"
     )
-
+    # destination where we need to store it
     transcript_path = os.path.join(
 
         TRANSCRIPT_FOLDER,
@@ -72,7 +72,7 @@ def process_transcript(
         transcript_filename
     )
 
-    # save transcript
+    # saving it locally in folder
     with open(
 
         transcript_path,
@@ -84,7 +84,7 @@ def process_transcript(
 
         f.write(transcript)
 
-    # chunk transcript
+    # chunking process
     chunks = chunk_text(transcript)
 
     # metadata list
@@ -92,14 +92,14 @@ def process_transcript(
 
     # process chunks
     for index, chunk in enumerate(chunks):
-
+        # giving number to chunks
         chunk_number = index + 1
 
-        # chunk filename
+        # filename for chunks
         chunk_filename = (
             f"{unique_id}_chunk_{chunk_number}.txt"
         )
-
+        # path where we need to store them
         chunk_path = os.path.join(
 
             CHUNKS_FOLDER,
@@ -107,7 +107,7 @@ def process_transcript(
             chunk_filename
         )
 
-        # save chunk
+        # writing data
         with open(
 
             chunk_path,
@@ -119,12 +119,12 @@ def process_transcript(
 
             f.write(chunk)
 
-        # embedding
+        # embedding genration
         embedding = generate_embedding(
             chunk
         )
 
-        # store in chromadb
+        # storing embedding in chromadb
         store_embedding(
 
             chunk_id=(

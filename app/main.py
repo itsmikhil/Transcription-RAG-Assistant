@@ -24,7 +24,7 @@ app = FastAPI()
 class YTRequest(BaseModel):
     url: str
 
-
+# root endpoint
 @app.get("/")
 def read_root():
 
@@ -33,9 +33,9 @@ def read_root():
     }
 
 
-# folders
+# making sure folders are there
 UPLOAD_FOLDER = "uploads/media"
-
+# this creates the folder if its not there
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
@@ -43,7 +43,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
 
-    # remove all old uploads
+    # here we are removing all the prev collections because 
     clear_collection()
 
     # allowed file types
@@ -55,7 +55,7 @@ async def upload_file(file: UploadFile = File(...)):
         ".mov"
     ]
 
-    # extension
+    # finding the extension type
     extension = os.path.splitext(
         file.filename
     )[1].lower()
@@ -70,10 +70,11 @@ async def upload_file(file: UploadFile = File(...)):
             )
         }
 
+    # to handle same file uploads
     # unique id
     unique_id = str(uuid.uuid4())
 
-    # unique filename
+    # creating unique file name
     unique_filename = unique_id + extension
 
     # save path
@@ -82,9 +83,12 @@ async def upload_file(file: UploadFile = File(...)):
         unique_filename
     )
 
-    # save uploaded file
+    # saving uploaded file
+    # using python's inbuilt library :- shutil
+    # used for performing all file operations
+    # Create/open file in WRITE BINARY(wb) mode
     with open(file_path, "wb") as buffer:
-
+        # shutil.copyfileobj(source, destination)
         shutil.copyfileobj(
             file.file,
             buffer
@@ -127,7 +131,6 @@ async def upload_file(file: UploadFile = File(...)):
 @app.post("/yt")
 def process_youtube_video(data: YTRequest):
 
-    # remove all old uploads
     clear_collection()
 
     # fetch youtube transcript

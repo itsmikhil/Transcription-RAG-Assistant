@@ -15,7 +15,7 @@ def get_collection():
     )
 
 
-# store embedding
+# store embedding in db
 def store_embedding(
 
     chunk_id,
@@ -41,7 +41,7 @@ def store_embedding(
     )
 
 
-# clear vector database
+# clear vector database to avoid mixing up of context fo each user
 def clear_collection():
 
     try:

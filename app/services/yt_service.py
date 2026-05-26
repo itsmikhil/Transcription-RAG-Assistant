@@ -2,6 +2,8 @@ from youtube_transcript_api import YouTubeTranscriptApi
 
 import re
 
+# fetching yt transcript directly without its audio/video
+
 
 def extract_video_id(url: str):
 

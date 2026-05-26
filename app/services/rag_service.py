@@ -11,7 +11,7 @@ from app.services.retrieval_service import retrieve_chunks
 # load env variables
 load_dotenv()
 
-# mistral llm
+# mistral llm 
 llm = ChatMistralAI(
 
     model="mistral-small-latest",

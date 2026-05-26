@@ -6,7 +6,7 @@ from app.services.embedding_service import (
     generate_embedding
 )
 
-
+# find the most similar chunk
 def retrieve_chunks(query: str):
 
     # query embedding

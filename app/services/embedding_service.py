@@ -1,6 +1,6 @@
 from sentence_transformers import SentenceTransformer
 
-# load embedding model once
+# load embedding model
 model = SentenceTransformer(
     "all-MiniLM-L6-v2"
 )

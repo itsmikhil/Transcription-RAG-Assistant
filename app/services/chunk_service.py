@@ -2,12 +2,12 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
 def chunk_text(text: str):
-
+    # keeps breaking into smaller chunks until target is met ==> thats why Recursive
     text_splitter = RecursiveCharacterTextSplitter(
 
         chunk_size=500,
-        chunk_overlap=100,
-
+        chunk_overlap=100, #overalp for continued context
+        # splitting priority
         separators=[
             "\n\n",
             "\n",
