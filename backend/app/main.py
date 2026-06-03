@@ -12,6 +12,8 @@ from app.services.retrieval_service import retrieve_chunks
 from app.services.rag_service import generate_rag_answer
 from app.services.yt_service import get_youtube_transcript
 from app.services.pipeline_service import process_transcript,process_media_file
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_mistralai import ChatMistralAI
 
 from app.services.chroma_service import (
     clear_collection
@@ -23,6 +25,9 @@ app = FastAPI()
 # request model
 class YTRequest(BaseModel):
     url: str
+
+class SummaryRequest(BaseModel):
+    filePath: str
 
 # root endpoint
 @app.get("/")
@@ -198,3 +203,38 @@ def chat(query: str):
     )
 
     return response
+
+# this is the endpoint for getting summary
+# jab jab hum kuch upload karte hai toh kaise apne aap summary aati hai
+# ye wahi hai 
+# ye bass by default mai aane waali short summary hai
+# jo detailed waali aayegi woh /chat se aayegi
+@app.post("/summary")
+def generateSummary(data: SummaryRequest):
+    with open(data.filePath, "r", encoding="utf-8") as f:
+        transcript_text = f.read()
+
+    llm = ChatMistralAI(
+        model="mistral-small-latest",
+        temperature=0
+    )
+    prompt = ChatPromptTemplate.from_template("""
+        You are an expert summarizer.
+
+        Transcript:
+        {transcript_text}
+
+        Generate a concise summary in exactly 3-5 sentences.
+        Do not use headings.
+        Do not use bullet points.
+        Return plain text only.
+        """)
+    chain = prompt | llm
+
+    summary = chain.invoke({
+        "transcript_text": transcript_text
+    })
+
+    return{
+        "summary": summary.content
+    }
