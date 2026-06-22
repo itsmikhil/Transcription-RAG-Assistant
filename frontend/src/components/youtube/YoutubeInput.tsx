@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Youtube, Link as LinkIcon, X } from "lucide-react";
 import { useWorkspace } from "@/context/WorkspaceContext";
 import { cn } from "@/lib/utils";
+import { submitYoutube } from "@/services/transcription";
 
 function extractVideoId(url: string): string | null {
   try {
@@ -29,7 +30,7 @@ export function YoutubeInput({ onSubmit }: YoutubeInputProps) {
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const id = extractVideoId(value.trim());
     if (!id) {
@@ -44,6 +45,8 @@ export function YoutubeInput({ onSubmit }: YoutubeInputProps) {
       thumbnail: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
     });
     onSubmit?.(value.trim(), id);
+    let res=await submitYoutube({url:value});
+    console.log(res);
   };
 
   if (source?.videoId) {

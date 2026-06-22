@@ -14,6 +14,9 @@ from app.services.yt_service import get_youtube_transcript
 from app.services.pipeline_service import process_transcript,process_media_file
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_mistralai import ChatMistralAI
+from fastapi.middleware.cors import CORSMiddleware
+
+
 
 from app.services.chroma_service import (
     clear_collection
@@ -21,6 +24,13 @@ from app.services.chroma_service import (
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8080"], 
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # request model
 class YTRequest(BaseModel):
