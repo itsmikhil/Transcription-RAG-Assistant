@@ -4,12 +4,9 @@
  * Each function intentionally throws — wire up real endpoints when the backend is ready.
  */
 
-import { ChatMessage, SourceMetadata, TranscriptSegment, useWorkspace } from "@/context/WorkspaceContext";
+import { ChatMessage, SourceMetadata, TranscriptSegment } from "@/context/WorkspaceContext";
 import {axios,backendUrl} from "../lib/api"
 
-function YoutubePage() {
-   const { source } = useWorkspace();
-}
 
 export interface UploadResponse {
   message: string;

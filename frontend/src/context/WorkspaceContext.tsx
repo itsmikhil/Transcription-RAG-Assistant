@@ -47,7 +47,7 @@ export interface SourceMetadata {
   videoId?: string;
   channel?: string;
   thumbnail?: string;
-  transcript_path?:string;
+  transcript_path?: string;
 }
 
 export interface WorkspaceState {
@@ -62,11 +62,15 @@ export interface WorkspaceState {
 }
 
 export interface WorkspaceContextValue extends WorkspaceState {
-  setSource: (s: SourceMetadata | null) => void;
+  setSource: (
+    s: SourceMetadata | null | ((prev: SourceMetadata | null) => SourceMetadata | null),
+  ) => void;
   setMessages: (m: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => void;
   setTranscript: (t: TranscriptSegment[]) => void;
   setSummary: (s: string | null) => void;
-  setPipeline: (p: PipelineStageState[] | ((prev: PipelineStageState[]) => PipelineStageState[])) => void;
+  setPipeline: (
+    p: PipelineStageState[] | ((prev: PipelineStageState[]) => PipelineStageState[]),
+  ) => void;
   setIsProcessing: (v: boolean) => void;
   setIsAssistantTyping: (v: boolean) => void;
   reset: () => void;
@@ -109,14 +113,23 @@ export function WorkspaceProvider({
       pipeline,
       isProcessing,
       isAssistantTyping,
-      setSource,
+      setSource: (s) =>
+        setSource((prev) =>
+          typeof s === "function"
+            ? (s as (p: SourceMetadata | null) => SourceMetadata | null)(prev)
+            : s,
+        ),
       setMessages: (m) =>
-        setMessages((prev) => (typeof m === "function" ? (m as (p: ChatMessage[]) => ChatMessage[])(prev) : m)),
+        setMessages((prev) =>
+          typeof m === "function" ? (m as (p: ChatMessage[]) => ChatMessage[])(prev) : m,
+        ),
       setTranscript,
       setSummary,
       setPipeline: (p) =>
         setPipeline((prev) =>
-          typeof p === "function" ? (p as (p: PipelineStageState[]) => PipelineStageState[])(prev) : p,
+          typeof p === "function"
+            ? (p as (p: PipelineStageState[]) => PipelineStageState[])(prev)
+            : p,
         ),
       setIsProcessing,
       setIsAssistantTyping,
