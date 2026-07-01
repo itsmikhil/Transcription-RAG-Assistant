@@ -2,9 +2,14 @@ import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Youtube, Link as LinkIcon, X } from "lucide-react";
-import { useWorkspace } from "@/context/WorkspaceContext";
+import {
+  useWorkspace,
+  DEFAULT_PIPELINE,
+  type PipelineStageId,
+  type PipelineStageStatus,
+} from "@/context/WorkspaceContext";
 import { cn } from "@/lib/utils";
-import { submitYoutube,genarateSummary } from "@/services/transcription";
+import { submitYoutube, genarateSummary } from "@/services/transcription";
 
 function extractVideoId(url: string): string | null {
   try {
@@ -26,9 +31,13 @@ interface YoutubeInputProps {
 }
 
 export function YoutubeInput({ onSubmit }: YoutubeInputProps) {
-  const { source, setSource, isProcessing,setSummary } = useWorkspace();
+  const { source, setSource, isProcessing, setSummary, setPipeline } = useWorkspace();
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | null>(null);
+
+  const updateStage = (id: PipelineStageId, status: PipelineStageStatus) => {
+    setPipeline((prev) => prev.map((stage) => (stage.id === id ? { ...stage, status } : stage)));
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -45,9 +54,48 @@ export function YoutubeInput({ onSubmit }: YoutubeInputProps) {
       thumbnail: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
     });
     onSubmit?.(value.trim(), id);
-    let ytRes=await submitYoutube({url:value});
-    let summaryRes=await genarateSummary({filePath:ytRes.transcript_path})
-    setSummary(summaryRes.summary);
+    try {
+      setPipeline(DEFAULT_PIPELINE);
+
+      updateStage("upload", "active");
+
+      const ytRes = await submitYoutube({
+        url: value,
+      });
+
+      updateStage("upload", "done");
+
+      setSource((prev) => ({
+        ...prev,
+        transcript_path: ytRes.transcript_path,
+      }));
+
+      updateStage("transcribe", "active");
+      updateStage("transcribe", "done");
+
+      updateStage("chunk", "active");
+      updateStage("chunk", "done");
+
+      updateStage("embed", "active");
+      updateStage("embed", "done");
+
+      updateStage("store", "active");
+      updateStage("store", "done");
+
+      updateStage("summarize", "active");
+
+      const summaryRes = await genarateSummary({
+        filePath: ytRes.transcript_path,
+      });
+
+      updateStage("summarize", "done");
+
+      setSummary(summaryRes.summary);
+
+      updateStage("ready", "done");
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   if (source?.videoId) {

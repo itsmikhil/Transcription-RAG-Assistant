@@ -7,12 +7,11 @@ import { SummaryCard } from "@/components/transcript/SummaryCard";
 import {
   WorkspaceProvider,
   useWorkspace,
+  DEFAULT_PIPELINE,
+  type PipelineStageId,
+  type PipelineStageStatus,
 } from "@/context/WorkspaceContext";
-import {
-  uploadMedia,
-  genarateSummary,
-  askTranscript,
-} from "@/services/transcription";
+import { uploadMedia, genarateSummary, askTranscript } from "@/services/transcription";
 
 export const Route = createFileRoute("/upload")({
   head: () => ({
@@ -20,8 +19,7 @@ export const Route = createFileRoute("/upload")({
       { title: "Upload Workspace — Echoscribe.ai" },
       {
         name: "description",
-        content:
-          "Upload audio or video files, transcribe with AI, and chat with your content.",
+        content: "Upload audio or video files, transcribe with AI, and chat with your content.",
       },
     ],
   }),
@@ -37,27 +35,50 @@ function UploadPage() {
 }
 
 function UploadPageContent() {
-  const {
-    setSummary,
-    setMessages,
-    setIsAssistantTyping,
-    setSource,
-  } = useWorkspace();
+  const { setSummary, setMessages, setIsAssistantTyping, setSource, setPipeline } = useWorkspace();
+
+  const updateStage = (id: PipelineStageId, status: PipelineStageStatus) => {
+    setPipeline((prev) => prev.map((stage) => (stage.id === id ? { ...stage, status } : stage)));
+  };
 
   const handleUpload = async (file: File) => {
     try {
+      setPipeline(DEFAULT_PIPELINE);
+
+      updateStage("upload", "active");
+
       const uploadRes = await uploadMedia({ file });
+
+      updateStage("upload", "done");
 
       setSource((prev) => ({
         ...prev,
         transcript_path: uploadRes.transcript_path,
       }));
 
+      updateStage("transcribe", "active");
+      updateStage("transcribe", "done");
+
+      updateStage("chunk", "active");
+      updateStage("chunk", "done");
+
+      updateStage("embed", "active");
+      updateStage("embed", "done");
+
+      updateStage("store", "active");
+      updateStage("store", "done");
+
+      updateStage("summarize", "active");
+
       const summaryRes = await genarateSummary({
         filePath: uploadRes.transcript_path,
       });
 
+      updateStage("summarize", "done");
+
       setSummary(summaryRes.summary);
+
+      updateStage("ready", "done");
     } catch (err) {
       console.error(err);
     }

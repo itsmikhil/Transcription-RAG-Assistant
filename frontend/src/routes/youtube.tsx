@@ -5,10 +5,7 @@ import { ChatContainer } from "@/components/chat/ChatContainer";
 import { ProcessingPipeline } from "@/components/pipeline/ProcessingPipeline";
 import { SummaryCard } from "@/components/transcript/SummaryCard";
 import { askTranscript } from "@/services/transcription";
-import {
-  WorkspaceProvider,
-  useWorkspace,
-} from "@/context/WorkspaceContext";
+import { WorkspaceProvider, useWorkspace } from "@/context/WorkspaceContext";
 
 export const Route = createFileRoute("/youtube")({
   head: () => ({
@@ -16,8 +13,7 @@ export const Route = createFileRoute("/youtube")({
       { title: "YouTube Workspace — Echoscribe.ai" },
       {
         name: "description",
-        content:
-          "Paste a YouTube URL, transcribe with AI, and chat with the video.",
+        content: "Paste a YouTube URL, transcribe with AI, and chat with the video.",
       },
     ],
   }),
