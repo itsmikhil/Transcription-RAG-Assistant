@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Youtube, Link as LinkIcon, X } from "lucide-react";
 import { useWorkspace } from "@/context/WorkspaceContext";
 import { cn } from "@/lib/utils";
-import { submitYoutube } from "@/services/transcription";
+import { submitYoutube,genarateSummary } from "@/services/transcription";
 
 function extractVideoId(url: string): string | null {
   try {
@@ -26,7 +26,7 @@ interface YoutubeInputProps {
 }
 
 export function YoutubeInput({ onSubmit }: YoutubeInputProps) {
-  const { source, setSource, isProcessing } = useWorkspace();
+  const { source, setSource, isProcessing,setSummary } = useWorkspace();
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -45,8 +45,9 @@ export function YoutubeInput({ onSubmit }: YoutubeInputProps) {
       thumbnail: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
     });
     onSubmit?.(value.trim(), id);
-    let res=await submitYoutube({url:value});
-    console.log(res);
+    let ytRes=await submitYoutube({url:value});
+    let summaryRes=await genarateSummary({filePath:ytRes.transcript_path})
+    setSummary(summaryRes.summary);
   };
 
   if (source?.videoId) {

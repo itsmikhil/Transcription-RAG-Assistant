@@ -13,7 +13,7 @@ export function SummaryCard() {
         </div>
         <h3 className="text-sm font-medium text-foreground">AI Summary</h3>
       </div>
-      <div className="mt-4">
+      <div className="mt-4 max-h-64 overflow-y-auto pr-2">
         {isProcessing && !summary ? (
           <div className="space-y-2">
             <LoadingSkeleton className="h-3 w-full" />

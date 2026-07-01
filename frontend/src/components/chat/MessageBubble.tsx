@@ -1,9 +1,16 @@
 import { cn } from "@/lib/utils";
 import { AudioLines, User } from "lucide-react";
 import type { ChatMessage } from "@/context/WorkspaceContext";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { useAnimatedText } from "./useAnimatedText";
 
 export function MessageBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === "user";
+
+  const animatedContent = isUser
+    ? message.content
+    : useAnimatedText(message.content);
 
   return (
     <div
@@ -20,7 +27,11 @@ export function MessageBubble({ message }: { message: ChatMessage }) {
             : "bg-gradient-to-br from-primary to-accent border-transparent text-primary-foreground shadow-md shadow-primary/20",
         )}
       >
-        {isUser ? <User className="h-4 w-4" /> : <AudioLines className="h-4 w-4" />}
+        {isUser ? (
+          <User className="h-4 w-4" />
+        ) : (
+          <AudioLines className="h-4 w-4" />
+        )}
       </div>
 
       <div
@@ -36,7 +47,30 @@ export function MessageBubble({ message }: { message: ChatMessage }) {
             ↳ {message.timestamp}
           </div>
         )}
-        <div className="whitespace-pre-wrap">{message.content}</div>
+
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+            ul: ({ children }) => (
+              <ul className="list-disc ml-5 space-y-1">{children}</ul>
+            ),
+            ol: ({ children }) => (
+              <ol className="list-decimal ml-5 space-y-1">{children}</ol>
+            ),
+            li: ({ children }) => <li>{children}</li>,
+            strong: ({ children }) => (
+              <strong className="font-semibold text-white">{children}</strong>
+            ),
+            code: ({ children }) => (
+              <code className="rounded bg-white/10 px-1 py-0.5 text-primary">
+                {children}
+              </code>
+            ),
+          }}
+        >
+          {animatedContent}
+        </ReactMarkdown>
       </div>
     </div>
   );

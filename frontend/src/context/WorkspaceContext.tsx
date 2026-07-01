@@ -47,6 +47,7 @@ export interface SourceMetadata {
   videoId?: string;
   channel?: string;
   thumbnail?: string;
+  transcript_path?:string;
 }
 
 export interface WorkspaceState {

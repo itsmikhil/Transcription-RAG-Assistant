@@ -142,3 +142,32 @@
     color: var(--color-foreground);
   }
 }
+
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Width */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+/* Background (track) */
+::-webkit-scrollbar-track {
+  background: #111827; /* Change this */
+}
+
+/* Scroll thumb */
+::-webkit-scrollbar-thumb {
+  background: #23244a; /* Change this */
+  border-radius: 999px;
+}
+
+/* Hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #21233c;
+}

@@ -3,8 +3,11 @@ import { WorkspaceLayout } from "@/layouts/WorkspaceLayout";
 import { UploadArea } from "@/components/upload/UploadArea";
 import { ChatContainer } from "@/components/chat/ChatContainer";
 import { ProcessingPipeline } from "@/components/pipeline/ProcessingPipeline";
-import { TranscriptPanel } from "@/components/transcript/TranscriptPanel";
 import { SummaryCard } from "@/components/transcript/SummaryCard";
+import {
+  WorkspaceProvider,
+  useWorkspace,
+} from "@/context/WorkspaceContext";
 
 export const Route = createFileRoute("/upload")({
   head: () => ({
@@ -22,6 +25,17 @@ export const Route = createFileRoute("/upload")({
 
 function UploadPage() {
   return (
+    <WorkspaceProvider mode="upload">
+      <UploadPageContent />
+    </WorkspaceProvider>
+  );
+}
+
+function UploadPageContent() {
+  // This makes the context available to all children
+  useWorkspace();
+
+  return (
     <WorkspaceLayout
       mode="upload"
       title="Upload Workspace"
@@ -31,7 +45,6 @@ function UploadPage() {
         <div className="space-y-6">
           <ProcessingPipeline />
           <SummaryCard />
-          <TranscriptPanel />
         </div>
       }
     >

@@ -36,6 +36,9 @@ app.add_middleware(
 class YTRequest(BaseModel):
     url: str
 
+class TranscriptRequest(BaseModel):
+    filePath: str
+
 class SummaryRequest(BaseModel):
     filePath: str
 
@@ -201,15 +204,15 @@ def search(query: str):
         "results": results
     }
 
+class ChatRequest(BaseModel):
+    query: str
 
 # rag chat
 @app.post("/chat")
-def chat(query: str):
-
-    user_id = "user_1"
+def chat(data: ChatRequest):
 
     response = generate_rag_answer(
-        query=query
+        query=data.query
     )
 
     return response
@@ -247,4 +250,15 @@ def generateSummary(data: SummaryRequest):
 
     return{
         "summary": summary.content
+    }
+
+# to show transcript on frontend
+@app.post("/transcript")
+def get_transcript(data: TranscriptRequest):
+
+    with open(data.filePath, "r", encoding="utf-8") as f:
+        transcript = f.read()
+
+    return {
+        "transcript": transcript
     }
