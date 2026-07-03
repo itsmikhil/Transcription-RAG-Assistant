@@ -1,8 +1,3 @@
-import whisper
-
-# Lazy-loaded Whisper model
-model = None
-
 # for transcript extraction from video or audio files
 # ffmpeg is a package is a multimedia processing tool.
 # It is used for:
@@ -11,6 +6,12 @@ model = None
 # extracting audio from video
 # compression
 # format handling
+
+# Lazy-loaded Whisper model
+import whisper
+
+model = None
+
 
 def get_model():
     global model
