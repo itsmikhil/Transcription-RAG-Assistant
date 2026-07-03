@@ -1,5 +1,5 @@
 from fastapi import FastAPI, UploadFile, File
-from fastapi import Form
+from fastapi import HTTPException
 
 from pydantic import BaseModel
 
@@ -52,9 +52,10 @@ def read_root():
 
 
 # making sure folders are there
-UPLOAD_FOLDER = "uploads/media"
 # this creates the folder if its not there
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs("uploads/media", exist_ok=True)
+os.makedirs("uploads/transcripts", exist_ok=True)
+os.makedirs("uploads/chunks", exist_ok=True)
 
 
 # upload local media
@@ -81,12 +82,10 @@ async def upload_file(file: UploadFile = File(...)):
     # validate extension
     if extension not in allowed_extensions:
 
-        return {
-            "error": (
-                "Only mp3, mp4, wav, m4a "
-                "and mov files are allowed"
-            )
-        }
+        raise HTTPException(
+            status_code=400,
+            detail="Only mp3, mp4, wav, m4a and mov files are allowed."
+        )
 
     # to handle same file uploads
     # unique id
@@ -152,9 +151,17 @@ def process_youtube_video(data: YTRequest):
     clear_collection()
 
     # fetch youtube transcript
-    transcript = get_youtube_transcript(
-        data.url
-    )
+    try:
+        transcript = get_youtube_transcript(
+            data.url
+        )
+    except:
+        print(f"YouTube transcript error: {e}")
+
+        raise HTTPException(
+            status_code=400,
+            detail="Transcript is not available for this YouTube video."
+        )
 
     # unique id
     unique_id = str(uuid.uuid4())
