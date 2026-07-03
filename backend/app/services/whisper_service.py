@@ -1,5 +1,7 @@
-import os
 import whisper
+
+# Lazy-loaded Whisper model
+model = None
 
 # for transcript extraction from video or audio files
 # ffmpeg is a package is a multimedia processing tool.
@@ -10,14 +12,18 @@ import whisper
 # compression
 # format handling
 
+def get_model():
+    global model
 
+    if model is None:
+        model = whisper.load_model("tiny")
 
-ffmpeg_path = r"C:\Users\Mikhil\OneDrive\Desktop\ffmpeg-8.1.1-essentials_build\ffmpeg-8.1.1-essentials_build\bin"
+    return model
 
-os.environ["PATH"] = ffmpeg_path + os.pathsep + os.environ["PATH"]
-
-model = whisper.load_model("base")
 
 def transcribe_audio(audio_path: str):
-    result = model.transcribe(audio_path)
+    whisper_model = get_model()
+
+    result = whisper_model.transcribe(audio_path)
+
     return result["text"]

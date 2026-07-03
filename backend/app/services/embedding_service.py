@@ -1,13 +1,23 @@
 from sentence_transformers import SentenceTransformer
 
-# load embedding model
-model = SentenceTransformer(
-    "all-MiniLM-L6-v2"
-)
+# Lazy-loaded embedding model
+model = None
+
+
+def get_model():
+    global model
+
+    if model is None:
+        model = SentenceTransformer(
+            "all-MiniLM-L6-v2"
+        )
+
+    return model
 
 
 def generate_embedding(text: str):
+    embedding_model = get_model()
 
-    embedding = model.encode(text)
+    embedding = embedding_model.encode(text)
 
     return embedding.tolist()
