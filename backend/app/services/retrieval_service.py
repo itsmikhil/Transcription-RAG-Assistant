@@ -2,12 +2,12 @@ from app.services.chroma_service import (
     get_collection
 )
 
-from app.services.embedding_service import (
-    generate_embedding
-)
 
 # find the most similar chunk
 def retrieve_chunks(query: str):
+
+    # Lazy import to avoid loading SentenceTransformer during app startup
+    from app.services.embedding_service import generate_embedding
 
     # query embedding
     query_embedding = generate_embedding(

@@ -1,6 +1,5 @@
 from sentence_transformers import SentenceTransformer
 
-# Lazy-loaded embedding model
 model = None
 
 
