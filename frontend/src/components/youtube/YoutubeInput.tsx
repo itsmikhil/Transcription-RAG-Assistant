@@ -9,7 +9,7 @@ import {
   type PipelineStageStatus,
 } from "@/context/WorkspaceContext";
 import { cn } from "@/lib/utils";
-import { submitYoutube, genarateSummary } from "@/services/transcription";
+import { submitYoutube, generateSummary } from "@/services/transcription";
 
 function extractVideoId(url: string): string | null {
   try {
@@ -31,7 +31,8 @@ interface YoutubeInputProps {
 }
 
 export function YoutubeInput({ onSubmit }: YoutubeInputProps) {
-  const { source, setSource, isProcessing, setSummary, setPipeline } = useWorkspace();
+  const { source, setSource, isProcessing, setIsProcessing, setSummary, setPipeline } =
+    useWorkspace();
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -55,12 +56,13 @@ export function YoutubeInput({ onSubmit }: YoutubeInputProps) {
     });
     onSubmit?.(value.trim(), id);
     try {
+      setIsProcessing(true);
       setPipeline(DEFAULT_PIPELINE);
 
       updateStage("upload", "active");
 
       const ytRes = await submitYoutube({
-        url: value,
+        url: value.trim(),
       });
 
       updateStage("upload", "done");
@@ -84,7 +86,7 @@ export function YoutubeInput({ onSubmit }: YoutubeInputProps) {
 
       updateStage("summarize", "active");
 
-      const summaryRes = await genarateSummary({
+      const summaryRes = await generateSummary({
         filePath: ytRes.transcript_path,
       });
 
@@ -95,6 +97,8 @@ export function YoutubeInput({ onSubmit }: YoutubeInputProps) {
       updateStage("ready", "done");
     } catch (err) {
       console.error(err);
+    }finally{
+      setIsProcessing(false);
     }
   };
 
@@ -155,9 +159,11 @@ export function YoutubeInput({ onSubmit }: YoutubeInputProps) {
         />
         <Button
           type="submit"
+          disabled={isProcessing}
           className="rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90 shadow-md shadow-primary/30"
         >
-          <Youtube className="h-4 w-4" /> Transcribe
+          <Youtube className="h-4 w-4" />
+          {isProcessing ? "Processing..." : "Transcribe"}
         </Button>
       </div>
       {error && <p className="mt-2 text-xs text-destructive">{error}</p>}

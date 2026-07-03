@@ -2,9 +2,24 @@ import { Upload, Wand2, MessagesSquare } from "lucide-react";
 import { GlassCard } from "./GlassCard";
 
 const steps = [
-  { icon: Upload, step: "01", title: "Upload file or paste URL", desc: "Drop an audio/video file, or share a YouTube link. We handle the rest." },
-  { icon: Wand2, step: "02", title: "AI generates the transcript", desc: "Speaker labels, timestamps, and a clean summary — ready in minutes." },
-  { icon: MessagesSquare, step: "03", title: "Ask questions, get answers", desc: "Chat with your transcript. Every answer is cited to a moment in time." },
+  {
+    icon: Upload,
+    step: "01",
+    title: "Upload or Paste a YouTube Link",
+    desc: "Upload an audio/video file or provide a YouTube URL to start AI processing.",
+  },
+  {
+    icon: Wand2,
+    step: "02",
+    title: "Transcribe & Generate Summary",
+    desc: "Whisper transcribes the content while AI creates a concise summary and searchable knowledge base.",
+  },
+  {
+    icon: MessagesSquare,
+    step: "03",
+    title: "Chat with Your Content",
+    desc: "Ask questions in natural language and receive context-aware answers powered by RAG.",
+  },
 ];
 
 export function HowItWorks() {
@@ -24,7 +39,9 @@ export function HowItWorks() {
                 <div className="h-10 w-10 grid place-items-center rounded-xl bg-gradient-to-br from-primary/30 to-accent/30 border border-white/10">
                   <s.icon className="h-5 w-5 text-foreground" />
                 </div>
-                <span className="text-3xl font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{s.step}</span>
+                <span className="text-3xl font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  {s.step}
+                </span>
               </div>
               <h3 className="mt-5 text-lg font-medium text-foreground">{s.title}</h3>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{s.desc}</p>

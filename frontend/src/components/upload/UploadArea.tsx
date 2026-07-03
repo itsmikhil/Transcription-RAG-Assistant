@@ -44,7 +44,7 @@ export function UploadArea({
       fileSizeLabel: formatBytes(file.size),
       title: file.name,
     });
-    onFileSelected?.(file);
+    void onFileSelected?.(file);
   };
 
   const onDrop = (e: DragEvent<HTMLDivElement>) => {

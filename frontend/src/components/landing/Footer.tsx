@@ -1,9 +1,8 @@
 import { AudioLines, Github, Twitter, Linkedin } from "lucide-react";
 
 const socials = [
-  { icon: Twitter, href: "#", label: "Twitter" },
-  { icon: Github, href: "#", label: "GitHub" },
-  { icon: Linkedin, href: "#", label: "LinkedIn" },
+  { icon: Github, href: "https://github.com/itsmikhil/Transcription-RAG-Assistant", label: "GitHub" },
+  { icon: Linkedin, href: "https://linkedin.com/in/mikhilailani", label: "LinkedIn" },
 ];
 
 export function Footer() {

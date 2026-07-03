@@ -11,7 +11,7 @@ import {
   type PipelineStageId,
   type PipelineStageStatus,
 } from "@/context/WorkspaceContext";
-import { uploadMedia, genarateSummary, askTranscript } from "@/services/transcription";
+import { uploadMedia, generateSummary, askTranscript } from "@/services/transcription";
 
 export const Route = createFileRoute("/upload")({
   head: () => ({
@@ -70,7 +70,7 @@ function UploadPageContent() {
 
       updateStage("summarize", "active");
 
-      const summaryRes = await genarateSummary({
+      const summaryRes = await generateSummary({
         filePath: uploadRes.transcript_path,
       });
 

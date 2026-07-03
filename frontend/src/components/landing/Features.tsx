@@ -2,12 +2,36 @@ import { Zap, FileText, MessageSquare, Youtube, Clock, Languages } from "lucide-
 import { GlassCard } from "./GlassCard";
 
 const features = [
-  { icon: Zap, title: "Fast AI Transcription", desc: "Industry-leading speech models turn hours of audio into accurate text in minutes." },
-  { icon: FileText, title: "AI Summarization", desc: "Instant chapter-by-chapter summaries, key insights, and action items." },
-  { icon: MessageSquare, title: "Ask Your Transcript", desc: "Chat naturally with your content. Get cited answers with timestamps." },
-  { icon: Youtube, title: "YouTube Support", desc: "Paste any YouTube URL and transcribe it without downloading a thing." },
-  { icon: Clock, title: "Timestamp-based Answers", desc: "Every answer points back to the exact moment in your media." },
-  { icon: Languages, title: "100+ Languages", desc: "Transcribe and chat across English, Spanish, Hindi, Mandarin, and more." },
+  {
+    icon: Zap,
+    title: "AI-Powered Transcription",
+    desc: "Convert audio, video, and YouTube content into accurate transcripts using Whisper AI.",
+  },
+  {
+    icon: FileText,
+    title: "Smart Summaries",
+    desc: "Generate concise AI summaries that capture the key points from long recordings.",
+  },
+  {
+    icon: MessageSquare,
+    title: "Chat with Your Content",
+    desc: "Ask questions in natural language and get context-aware answers using RAG.",
+  },
+  {
+    icon: Youtube,
+    title: "YouTube Analysis",
+    desc: "Paste a YouTube URL to transcribe, summarize, and chat with the video.",
+  },
+  {
+    icon: Clock,
+    title: "Processing Pipeline",
+    desc: "Track every stage from transcription and embeddings to AI-powered summaries.",
+  },
+  {
+    icon: Languages,
+    title: "Modern AI Stack",
+    desc: "Built with React, FastAPI, Whisper, LangChain, ChromaDB, and Mistral AI.",
+  },
 ];
 
 export function Features() {
@@ -17,10 +41,10 @@ export function Features() {
         <div className="max-w-2xl">
           <p className="text-sm font-medium text-primary">Features</p>
           <h2 className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground">
-            Everything you need to make sense of audio.
+            Everything you need to analyze audio and video.
           </h2>
           <p className="mt-4 text-muted-foreground">
-            A focused toolkit for creators, researchers, and teams who live in recordings, meetings, and long-form video.
+            Transcribe recordings, generate AI summaries, and interact with your content through a Retrieval-Augmented Generation (RAG) chat interface.
           </p>
         </div>
         <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
